@@ -15,6 +15,21 @@ Detect registry Run Key persistence activity commonly associated with malware an
 
 ---
 
+## Scheduled Task Persistence Detection
+
+```kql
+Event
+| where Source == "Microsoft-Windows-Sysmon"
+| where EventID == 1
+| where RenderedDescription has "schtasks"
+| sort by TimeGenerated desc
+```
+
+Purpose:
+Detect scheduled task persistence activity and suspicious usage of schtasks.exe.
+
+---
+
 ## Broad Registry Modification Monitoring
 
 ```kql
@@ -43,6 +58,38 @@ Detect startup folder persistence techniques that automatically execute payloads
 
 ---
 
+## Scheduled Task Creation Monitoring
+
+```kql
+Event
+| where Source == "Microsoft-Windows-Sysmon"
+| where EventID == 1
+| where RenderedDescription has "/create"
+| where RenderedDescription has "schtasks"
+| sort by TimeGenerated desc
+```
+
+Purpose:
+Identify scheduled task creation activity and investigate suspicious persistence behavior.
+
+---
+
+## PowerShell Spawned Scheduled Tasks
+
+```kql
+Event
+| where Source == "Microsoft-Windows-Sysmon"
+| where EventID == 1
+| where RenderedDescription has "powershell.exe"
+| where RenderedDescription has "schtasks.exe"
+| sort by TimeGenerated desc
+```
+
+Purpose:
+Detect PowerShell-driven scheduled task persistence activity frequently associated with post-exploitation behavior.
+
+---
+
 ## Registry Persistence by User
 
 ```kql
@@ -63,27 +110,13 @@ Identify users responsible for registry persistence activity and investigate sus
 ```kql
 Event
 | where Source == "Microsoft-Windows-Sysmon"
-| where EventID == 13
+| where EventID == 13 or EventID == 1
 | where RenderedDescription has_any ("powershell.exe","cmd.exe","notepad.exe")
 | sort by TimeGenerated desc
 ```
 
 Purpose:
-Investigate executables configured within persistence-related registry modifications.
-
----
-
-## Registry Persistence Process Visibility
-
-```kql
-Event
-| where Source == "Microsoft-Windows-Sysmon"
-| where EventID == 13
-| project TimeGenerated, Computer, RenderedDescription
-```
-
-Purpose:
-Review persistence-related registry modification telemetry and investigate suspicious execution patterns.
+Investigate executables configured within persistence-related telemetry and identify suspicious payload activity.
 
 ---
 
@@ -92,6 +125,7 @@ Review persistence-related registry modification telemetry and investigate suspi
 - Threat Hunting
 - Persistence Detection
 - Registry Monitoring
+- Scheduled Task Monitoring
 - KQL Querying
 - Sysmon Analysis
 - Microsoft Sentinel
